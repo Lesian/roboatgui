@@ -4,8 +4,12 @@
 # Senseable City Lab #
 # Roboat Control Graphical User Interface #
 
-from Tkinter import *
-import tkMessageBox
+try:
+	from Tkinter import *
+except(ImportError):
+	from tkinter import *
+	from tkinter import messagebox
+
 from serial import *
 import sys
 import glob
@@ -195,10 +199,10 @@ def uartclCallback():
 	ser.close()
 
 
-uartopbtn = Button(ConfigFrame, text = "OPEN UART PORT", width = 12, command = uartOpCallback)
+uartopbtn = Button(ConfigFrame, text = "OPEN UART PORT", width = 16, command = uartOpCallback)
 uartopbtn.grid(row = 2, column = 8, padx = 0, pady = 0)
 
-uartclbtn = Button(ConfigFrame, text = "CLOSE UART PORT", width = 12, command = uartclCallback)
+uartclbtn = Button(ConfigFrame, text = "CLOSE UART PORT", width = 16, command = uartclCallback)
 uartclbtn.grid(row = 4, column = 8, padx = 0, pady = 0)
 
 
