@@ -15,6 +15,17 @@ import sys
 import glob
 
 
+#-------Parameters for wireless communication------###
+STARTBYTE = 0xAA   #first byte
+ROBOTID = 0x01     #second byte
+COMMANDMODE = 0x04 #third byte 
+ROBOTSPEED = 0x01  #optional fourth byte 
+ENDBYTE = 0xFC     #fifth byte/last byte 
+
+ROBOTTURNSPEED = 0x00
+#-------Parameters for wireless communication-------###
+
+
 
 ##------Serial port variables-------##
 serialPort = ""
@@ -353,6 +364,14 @@ def rightKey(event):
 	print("Right key pressed")
 
 def upKey(event):
+	global ser
+	packet = bytearray()
+	packet.append(STARTBYTE)
+	packet.append(ROBOTID)
+	packet.append(COMMANDMODE)
+	packet.append(ROBOTSPEED)
+	packet.append(ENDBYTE)
+	ser.write(packet)
 	print("Up key pressed")
 
 def downKey(event):
@@ -365,13 +384,6 @@ def minusKey(event):
 	print('Minus key pressed')
 
 ###------Communication between the higher level controller and the microcontroller #####
-
-UART_Command = []
-COMMANDMODE = ""
-DATAAREA = []
-ROBOTSPEED = 0x01
-ROBOTTURNSPEED = 0x00
-Command_Length = 20
 
 def Send_float_to_byte():
 	pass
