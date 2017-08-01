@@ -18,11 +18,18 @@ import glob
 #-------Parameters for wireless communication------###
 STARTBYTE = b'\xAA'   #first byte
 ROBOTID = b'\x01'     #second byte
-COMMANDMODE = b'\x04' #third byte 
+COMMANDMODE = b'\x05' #third byte 
 COMMANDDATALENGTH = b'\x02' # fourth byte
 ROBOTSPEED = b'\x00'  #fifth byte 
 ROBOTDIRECTION = b'\x00' # sixth byte
 ENDBYTE = b'\xFC'     #seventh/last byte 
+# STARTBYTE = 0xAA
+# ROBOTID = 0x01
+# COMMANDMODE = 0x05
+# COMMANDDATALENGTH = 0x02
+# ROBOTSPEED = 0x00
+# ROBOTDIRECTION = 0x00
+# ENDBYTE = 0xFC
 #-------Parameters for wireless communication-------###
 
 
@@ -195,12 +202,10 @@ def uartOpCallback():
 	global baudRate
 	global ser
 	global Flag
-	try:
-		ser = Serial(serialPort, baudRate, timeout=0, writeTimeout=0, stopbits = 1, parity = 'N', bytesize = 8) #ensure non-blocking
-		Flag = True
-		print('Serial port initialization successful')
-	except:
-		print("Serial port initialization failed")
+	ser = Serial(serialPort, baudRate, timeout=0, writeTimeout=2, stopbits = 1, parity = 'N', bytesize = 8,  xonxoff=False, rtscts = False, dsrdtr=False) #ensure non-blocking
+	Flag = True
+	
+	
 
 
 def uartclCallback():
@@ -365,18 +370,40 @@ def rightKey(event):
 
 def upKey(event):
 	global ser
+	# packet = bytearray()
+	# packet.append(STARTBYTE)
+	# packet.append(ROBOTID)
+	# packet.append(COMMANDMODE)
+	# packet.append(COMMANDDATALENGTH)
+	# packet.append(ROBOTSPEED)
+	# packet.append(ROBOTDIRECTION)
+	# packet.append(ENDBYTE)
+	# ser.write(packet)
+	STARTBYTE = b'\xAA'   #first byte
+	ROBOTID = b'\x01'     #second byte
+	COMMANDMODE = b'\x05' #third byte 
+	COMMANDDATALENGTH = b'\x02' # fourth byte
+	ROBOTSPEED = b'\x00'  #fifth byte 
+	ROBOTDIRECTION = b'\x00' # sixth byte
+	ENDBYTE = b'\xFC'     #seventh/last byte 
 	ser.write(STARTBYTE)
-	
+	for i in range(10000):
+		pass
 	ser.write(ROBOTID)
-	
+	for i in range(10000):
+		pass
 	ser.write(COMMANDMODE)
-	
+	for i in range(10000):
+		pass
 	ser.write(COMMANDDATALENGTH)
-	
+	for i in range(10000):
+		pass
 	ser.write(ROBOTSPEED)
-	
+	for i in range(10000):
+		pass
 	ser.write(ROBOTDIRECTION)
-
+	for i in range(10000):
+		pass
 	ser.write(ENDBYTE)
 
 def downKey(event):
