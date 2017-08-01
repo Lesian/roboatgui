@@ -16,13 +16,13 @@ import glob
 
 
 #-------Parameters for wireless communication------###
-STARTBYTE = 0xAA   #first byte
-ROBOTID = 0x01     #second byte
-COMMANDMODE = 0x04 #third byte 
-ROBOTSPEED = 0x01  #optional fourth byte 
-ENDBYTE = 0xFC     #fifth byte/last byte 
-
-ROBOTTURNSPEED = 0x00
+STARTBYTE = b'\xAA'   #first byte
+ROBOTID = b'\x01'     #second byte
+COMMANDMODE = b'\x04' #third byte 
+COMMANDDATALENGTH = b'\x02' # fourth byte
+ROBOTSPEED = b'\x00'  #fifth byte 
+ROBOTDIRECTION = b'\x00' # sixth byte
+ENDBYTE = b'\xFC'     #seventh/last byte 
 #-------Parameters for wireless communication-------###
 
 
@@ -196,7 +196,7 @@ def uartOpCallback():
 	global ser
 	global Flag
 	try:
-		ser = Serial(serialPort, baudRate, timeout=0, writeTimeout=0) #ensure non-blocking
+		ser = Serial(serialPort, baudRate, timeout=0, writeTimeout=0, stopbits = 1, parity = 'N', bytesize = 8) #ensure non-blocking
 		Flag = True
 		print('Serial port initialization successful')
 	except:
@@ -319,6 +319,7 @@ def startRecCallback():
 		global ser
 		while Flag:
 			c = ser.read() # attempt to read a character from Serial
+			c = str(c, 'utf-8')
 			
 			#was anything read?
 			if len(c) == 0:
@@ -339,7 +340,6 @@ def startRecCallback():
 				serBuffer = "" # empty the buffer
 			else:
 				serBuffer += c # add to the buffer
-	
 		root.after(10, readSerial) # check serial again soon
 	root.after(100, readSerial)
 
@@ -365,14 +365,19 @@ def rightKey(event):
 
 def upKey(event):
 	global ser
-	packet = bytearray()
-	packet.append(STARTBYTE)
-	packet.append(ROBOTID)
-	packet.append(COMMANDMODE)
-	packet.append(ROBOTSPEED)
-	packet.append(ENDBYTE)
-	ser.write(packet)
-	print("Up key pressed")
+	ser.write(STARTBYTE)
+	
+	ser.write(ROBOTID)
+	
+	ser.write(COMMANDMODE)
+	
+	ser.write(COMMANDDATALENGTH)
+	
+	ser.write(ROBOTSPEED)
+	
+	ser.write(ROBOTDIRECTION)
+
+	ser.write(ENDBYTE)
 
 def downKey(event):
 	print("Down key pressed")
