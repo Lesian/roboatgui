@@ -8,7 +8,6 @@ try:
 	from Tkinter import *
 except(ImportError):
 	from tkinter import *
-	from tkinter import messagebox
 
 from serial import *
 import sys
@@ -166,156 +165,45 @@ def uartclCallback():
 	uartflag = False
 	ser.close()
 
-
-uartopbtn = Button(ConfigFrame, text = "OPEN UART PORT", width = 16, command = uartOpCallback)
-uartopbtn.grid(row = 2, column = 8, padx = 0, pady = 0)
-
-uartclbtn = Button(ConfigFrame, text = "CLOSE UART PORT", width = 16, command = uartclCallback)
-uartclbtn.grid(row = 4, column = 8, padx = 0, pady = 0)
-
-
-# Right Frame and its contents
-rightFrame = Frame(root, width = 200, height = 200)
-rightFrame.grid(row = 0, column = 20, padx = 20, pady = 2, sticky = N)
-Label(rightFrame, text= "Data Send Area").grid(row = 0, column = 0, padx = 0, pady = 2, sticky = W)
-
-newText = Text(rightFrame, width = 30, height = 10, takefocus = 0)
-newText.grid(row = 2, column = 0, padx = 0, pady = 0)
-
-Label(rightFrame, text = "Data Receive Area").grid(row = 11, column = 0, padx = 0, pady = 0, sticky = W)
-
-newText2 = Text(rightFrame, width = 30, height = 20, takefocus = 0)
-newText2.grid(row = 15, padx = 0, pady = 0, sticky = E)
-
-def dataClrCallback():
-	newText2.delete("1.0", END)
-
-DataClrBtn = Button(rightFrame, text = "Clear Data", command = dataClrCallback)
-DataClrBtn.grid(row = 11, column = 0, padx = 0, pady = 0, sticky = E)
-
-Datasendbtn = Button(rightFrame, text = "Send Data")
-Datasendbtn.grid(row = 0, padx = 0, pady = 0, sticky = E)
-
-
-# Swimming Behavior Frame
-SwimmingFrame = Frame(leftFrame, width = 10, height = 10)
-SwimmingFrame.grid(row = 28, column = 0, padx =0, pady = 0, sticky = "W")
-
-Label(SwimmingFrame, text = "Swimming Behaviors").grid(row = 0, column = 2, padx = 0, pady = 2, sticky = "NSEW")
-
-Fowbtn = Button(SwimmingFrame, text = "Forward", width = 14)
-Fowbtn.grid(row = 1, column = 0, padx = 2, pady = 2)
-
-Backbtn = Button(SwimmingFrame, text = "Backward", width = 14)
-Backbtn.grid(row = 2, column = 0, padx = 2, pady = 2)
-
-Leftbtn = Button(SwimmingFrame, text = "Left Sideways", width = 14)
-Leftbtn.grid(row = 1, column = 2, padx = 2, pady = 2)
-
-Rightbtn = Button(SwimmingFrame, text = "Right Sideways", width = 14)
-Rightbtn.grid(row = 2, column = 2, padx = 2, pady = 2)
-
-CCturnbtn = Button(SwimmingFrame, text = "Spot Turn CC", width = 14)
-CCturnbtn.grid(row = 1, column = 4, padx = 2, pady = 2)
-
-ACCturnbtn = Button(SwimmingFrame, text = "Spot Turn AntiCC", width = 14)
-ACCturnbtn.grid(row = 2, column = 4, padx = 2, pady = 2)
-
-LeftCirbtn = Button(SwimmingFrame, text = "Turn Left Circle", width = 14)
-LeftCirbtn.grid(row = 1, column = 6, padx = 2, pady = 2)
-
-RightCirbtn = Button(SwimmingFrame, text = "Turn Right Circle", width = 14)
-RightCirbtn.grid(row = 2, column = 6, padx = 2, pady = 2)
-
-#---Robot stops---#
-def spaceKey(event):
-	global robotspeed
-	commandmode = b'\x00'
-	robotspeed = b'\x00'
+def forwardCallback():
+	global movflag
+	global roboatspeed
+	commandmode = b'\x01' 
+	robotspeed = b'\x03'   
 	robotdirection = b'\x00'
+	movflag = 0
 	sendCommand(commandmode, robotspeed, robotdirection)
-#---Robot stops---#
 
-Stopbtn = Button(SwimmingFrame, text = "STOP", fg = 'red', command = spaceKey, width = 14)
-Stopbtn.grid(row = 2, column = 8, padx = 0, pady = 0)
+def backwardCallback():
+	global movflag
+	global robaotspeed
+	commandmode = b'\x05'
+	robotspeed = b'\x03'
+	robotdirection = b'\x00'
+	movflag = 1
+	sendCommand(commandmode, robotspeed, robotdirection)
 
-# forward swimming with a speed 
-# forward swimming with a speed
+def leftCallback():
+	global movflag
+	global roboatspeed
+	commandmode = b'\x06'
+	robotspeed = b'\x03'
+	robotdirection = b'\x00'
+	movflag = 2
+	sendCommand(commandmode, robotspeed, robotdirection)
 
-# backward swimming with a speed
-# backward swimming with a speed
-
-# left lateral swimming with a speed
-# left lateral swimming with a speed
-
-# right lateral swimming with a speed
-# right lateral swimming with a speed
-
-# Turn clockwise with a speed
-# Turn clockwise with a speed
-
-# Turn anticlockwise with a speed
-# Turn anticlockwise with a speed
-
-# Turn right with a radius
-# Turn right with a radius
-
-# Turn left with a radius
-# Turn left with a radius
-
-RecFrame = Frame(leftFrame, height = 10, width = 10)
-RecFrame.grid(row = 30, column = 0, sticky = W)
-
-Label(RecFrame, text = "").grid(row = 0, column = 0, pady = 2)
-
-def startRecCallback():
-	global ser
-	global uartflag
-	uartflag = True
-	def readSerial():
-		global ser
-		while uartflag:
-			c = ser.read() # attempt to read a character from Serial
-			c = str(c, 'utf-8')
-			
-			#was anything read?
-			if len(c) == 0:
-				break
-			
-			# get the buffer from outside of this function
-			global serBuffer
-			
-			# check if character is a delimeter
-			if c == '\r':
-				c = '' # don't want returns. chuck it
-				
-			if c == '\n':
-				serBuffer += "\n" # add the newline to the buffer
-				
-				#add the line to the TOP of the log
-				newText2.insert('0.0', serBuffer)
-				serBuffer = "" # empty the buffer
-			else:
-				serBuffer += c # add to the buffer
-		root.after(10, readSerial) # check serial again soon
-	root.after(100, readSerial)
-
-def stopRecCallback():
-	global ser
-	global uartflag
-	uartflag = False
-
-
-Startrec = Button(RecFrame, text = "START RECORDING", command = startRecCallback)
-Startrec.grid(row = 2, column = 0, pady = 2, padx = 2, sticky = W)
-
-Stoprec = Button(RecFrame, text = "STOP RECORDING", fg = "red", command = stopRecCallback)
-Stoprec.grid(row = 2, column = 3, pady = 2, padx = 2, sticky = W)
-#start monitoring and updating the GUI
-
+def rightCallback():
+	global movflag
+	global roboatspeed
+	commandmode = b'\x07'
+	robotspeed = b'\x03'
+	robotdirection = b'\x00'
+	movflag = 3
+	sendCommand(commandmode, robotspeed, robotdirection)
 
 def leftKey(event):
 	global movflag
+	global roboatspeed
 	commandmode = b'\x06'
 	robotspeed = b'\x03'
 	robotdirection = b'\x00'
@@ -325,6 +213,7 @@ def leftKey(event):
 
 def rightKey(event):
 	global movflag
+	global roboatspeed
 	commandmode = b'\x07'
 	robotspeed = b'\x03'
 	robotdirection = b'\x00'
@@ -333,6 +222,7 @@ def rightKey(event):
 
 def upKey(event):
 	global movflag
+	global roboatspeed
 	commandmode = b'\x01' 
 	robotspeed = b'\x03'   
 	robotdirection = b'\x00'
@@ -341,6 +231,7 @@ def upKey(event):
 
 def downKey(event):
 	global movflag
+	global robaotspeed
 	commandmode = b'\x05'
 	robotspeed = b'\x03'
 	robotdirection = b'\x00'
@@ -357,27 +248,19 @@ def sendCommand(commandmode, robotspeed, robotdirection):
 	ROBOTDIRECTION = robotdirection # sixth byte
 	ENDBYTE = b'\xFC'     #seventh/last byte 
 
-	# array = bytearray()
-	# array.append(0xAA)
-	# array.append(0x01)
-	# array.append(0x05)
-	# array.append(0x03)
-	# array.append(0x02)
-	# array.append(0x00)
-	# array.append(0xFC)
-	# ser.write(array)
+	
 	ser.write(STARTBYTE)
-	time.sleep(0.3)
+	time.sleep(0.4)
 	ser.write(ROBOTID)
-	time.sleep(0.3)
+	time.sleep(0.4)
 	ser.write(COMMANDMODE)
-	time.sleep(0.3)
+	time.sleep(0.4)
 	ser.write(COMMANDDATALENGTH)
-	time.sleep(0.3)
+	time.sleep(0.4)
 	ser.write(ROBOTSPEED)
-	time.sleep(0.3)
+	time.sleep(0.4)
 	ser.write(ROBOTDIRECTION)
-	time.sleep(0.3)
+	time.sleep(0.4)
 	ser.write(ENDBYTE)
 
 
@@ -419,6 +302,160 @@ def minusKey(event):
 		sendCommand(b'\x06', robotspeed, robotdirection)
 	elif movflag == 3:
 		sendCommand(b'\x06', robotspeed, robotdirection)
+
+
+
+
+uartopbtn = Button(ConfigFrame, text = "OPEN UART PORT", width = 16, command = uartOpCallback)
+uartopbtn.grid(row = 2, column = 8, padx = 0, pady = 0)
+
+uartclbtn = Button(ConfigFrame, text = "CLOSE UART PORT", width = 16, command = uartclCallback)
+uartclbtn.grid(row = 4, column = 8, padx = 0, pady = 0)
+
+
+# Right Frame and its contents
+rightFrame = Frame(root, width = 200, height = 200)
+rightFrame.grid(row = 0, column = 20, padx = 20, pady = 2, sticky = N)
+Label(rightFrame, text= "Data Send Area").grid(row = 0, column = 0, padx = 0, pady = 2, sticky = W)
+
+newText = Text(rightFrame, width = 30, height = 10, takefocus = 0)
+newText.grid(row = 2, column = 0, padx = 0, pady = 0)
+
+Label(rightFrame, text = "Data Receive Area").grid(row = 11, column = 0, padx = 0, pady = 0, sticky = W)
+
+newText2 = Text(rightFrame, width = 30, height = 20, takefocus = 0)
+newText2.grid(row = 15, padx = 0, pady = 0, sticky = E)
+
+def dataClrCallback():
+	newText2.delete("1.0", END)
+
+DataClrBtn = Button(rightFrame, text = "Clear Data", command = dataClrCallback)
+DataClrBtn.grid(row = 11, column = 0, padx = 0, pady = 0, sticky = E)
+
+Datasendbtn = Button(rightFrame, text = "Send Data")
+Datasendbtn.grid(row = 0, padx = 0, pady = 0, sticky = E)
+
+
+# Swimming Behavior Frame
+SwimmingFrame = Frame(leftFrame, width = 10, height = 10)
+SwimmingFrame.grid(row = 28, column = 0, padx =0, pady = 0, sticky = "W")
+
+Label(SwimmingFrame, text = "Swimming Behaviors").grid(row = 0, column = 2, padx = 0, pady = 2, sticky = "NSEW")
+
+Fowbtn = Button(SwimmingFrame, text = "Forward", width = 14, command = forwardCallback)
+Fowbtn.grid(row = 1, column = 0, padx = 2, pady = 2)
+
+Backbtn = Button(SwimmingFrame, text = "Backward", width = 14, command = backwardCallback)
+Backbtn.grid(row = 2, column = 0, padx = 2, pady = 2)
+
+Leftbtn = Button(SwimmingFrame, text = "Left Sideways", width = 14, command = leftCallback)
+Leftbtn.grid(row = 1, column = 2, padx = 2, pady = 2)
+
+Rightbtn = Button(SwimmingFrame, text = "Right Sideways", width = 14, command = rightCallback)
+Rightbtn.grid(row = 2, column = 2, padx = 2, pady = 2)
+
+CCturnbtn = Button(SwimmingFrame, text = "Spot Turn CC", width = 14)
+CCturnbtn.grid(row = 1, column = 4, padx = 2, pady = 2)
+
+ACCturnbtn = Button(SwimmingFrame, text = "Spot Turn AntiCC", width = 14)
+ACCturnbtn.grid(row = 2, column = 4, padx = 2, pady = 2)
+
+LeftCirbtn = Button(SwimmingFrame, text = "Turn Left Circle", width = 14)
+LeftCirbtn.grid(row = 1, column = 6, padx = 2, pady = 2)
+
+RightCirbtn = Button(SwimmingFrame, text = "Turn Right Circle", width = 14)
+RightCirbtn.grid(row = 2, column = 6, padx = 2, pady = 2)
+
+#---Robot stops---#
+def spaceKey(event):
+	global robotspeed
+	commandmode = b'\x00'
+	robotspeed = b'\x00'
+	robotdirection = b'\x00'
+	sendCommand(commandmode, robotspeed, robotdirection)
+#---Robot stops---#
+
+Stopbtn = Button(SwimmingFrame, text = "STOP", fg = 'red', command = spaceKey, width = 14)
+Stopbtn.grid(row = 1, column = 8, padx = 0, pady = 0)
+
+
+
+RecFrame = Frame(leftFrame, height = 10, width = 10)
+RecFrame.grid(row = 30, column = 0, sticky = W)
+
+Label(RecFrame, text = "").grid(row = 0, column = 0, pady = 2)
+
+speedBox = Spinbox(SwimmingFrame, from_=0, to=100, width = 2)
+speedBox.grid(row = 2, column = 8, padx = 0, pady = 0, sticky = 'W')
+
+def speedSelectCallback():
+	global robotspeed
+	global robotdirection
+	ans = speedBox.get()
+	temp = chr(int(ans))
+	robotspeed = temp.encode()
+	if movflag == 0:
+		sendCommand(b'\x04', robotspeed, robotdirection)
+	elif movflag == 1:
+		sendCommand(b'\x05', robotspeed, robotdirection)
+	elif movflag == 2:
+		sendCommand(b'\x06', robotspeed, robotdirection)
+	elif movflag == 3:
+		sendCommand(b'\x07', robotspeed, robotdirection)
+
+
+speedSelect = Button(SwimmingFrame, text = "Speed Select", width = 8, command = speedSelectCallback)
+speedSelect.grid(row = 2, column = 8, sticky = 'E')
+
+
+def startRecCallback():
+	global ser
+	global uartflag
+	uartflag = True
+	def readSerial():
+		global ser
+		while uartflag:
+			c = ser.read() # attempt to read a character from Serial
+			try:
+				c = str(c, 'utf-8')
+			except:
+				pass
+			
+			#was anything read?
+			if len(c) == 0:
+				break
+			
+			# get the buffer from outside of this function
+			global serBuffer
+			
+			# check if character is a delimeter
+			if c == '\r':
+				c = '' # don't want returns. chuck it
+				
+			if c == '\n':
+				serBuffer += "\n" # add the newline to the buffer
+				
+				#add the line to the TOP of the log
+				newText2.insert('0.0', serBuffer)
+				serBuffer = "" # empty the buffer
+			else:
+				serBuffer += c # add to the buffer
+		root.after(10, readSerial) # check serial again soon
+	root.after(100, readSerial)
+
+def stopRecCallback():
+	global ser
+	global uartflag
+	uartflag = False
+
+
+Startrec = Button(RecFrame, text = "START RECORDING", command = startRecCallback)
+Startrec.grid(row = 2, column = 0, pady = 2, padx = 2, sticky = W)
+
+Stoprec = Button(RecFrame, text = "STOP RECORDING", fg = "red", command = stopRecCallback)
+Stoprec.grid(row = 2, column = 3, pady = 2, padx = 2, sticky = W)
+#start monitoring and updating the GUI
+
 
 
 
