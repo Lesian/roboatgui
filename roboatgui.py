@@ -20,7 +20,7 @@ movflag = 0
 #-----flags----- #
 
 #---------speed and direction variables-----#
-robotspeed = b'\x00'
+robotspeed = chr(10).encode()
 robotdirection = b'\x00'
 
 ##------Serial port variables-------##
@@ -168,8 +168,8 @@ def uartclCallback():
 def forwardCallback():
 	global movflag
 	global roboatspeed
-	commandmode = b'\x01' 
-	robotspeed = b'\x03'   
+	commandmode = b'\x04' 
+	robotspeed = chr(10).encode()   
 	robotdirection = b'\x00'
 	movflag = 0
 	sendCommand(commandmode, robotspeed, robotdirection)
@@ -178,7 +178,7 @@ def backwardCallback():
 	global movflag
 	global robaotspeed
 	commandmode = b'\x05'
-	robotspeed = b'\x03'
+	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
 	movflag = 1
 	sendCommand(commandmode, robotspeed, robotdirection)
@@ -187,7 +187,7 @@ def leftCallback():
 	global movflag
 	global roboatspeed
 	commandmode = b'\x06'
-	robotspeed = b'\x03'
+	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
 	movflag = 2
 	sendCommand(commandmode, robotspeed, robotdirection)
@@ -196,7 +196,7 @@ def rightCallback():
 	global movflag
 	global roboatspeed
 	commandmode = b'\x07'
-	robotspeed = b'\x03'
+	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
 	movflag = 3
 	sendCommand(commandmode, robotspeed, robotdirection)
@@ -205,7 +205,7 @@ def leftKey(event):
 	global movflag
 	global roboatspeed
 	commandmode = b'\x06'
-	robotspeed = b'\x03'
+	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
 	movflag = 2
 	sendCommand(commandmode, robotspeed, robotdirection)
@@ -215,7 +215,7 @@ def rightKey(event):
 	global movflag
 	global roboatspeed
 	commandmode = b'\x07'
-	robotspeed = b'\x03'
+	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
 	movflag = 3
 	sendCommand(commandmode, robotspeed, robotdirection)
@@ -223,8 +223,8 @@ def rightKey(event):
 def upKey(event):
 	global movflag
 	global roboatspeed
-	commandmode = b'\x01' 
-	robotspeed = b'\x03'   
+	commandmode = b'\x04' 
+	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
 	movflag = 0
 	sendCommand(commandmode, robotspeed, robotdirection)
@@ -233,7 +233,7 @@ def downKey(event):
 	global movflag
 	global robaotspeed
 	commandmode = b'\x05'
-	robotspeed = b'\x03'
+	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
 	movflag = 1
 	sendCommand(commandmode, robotspeed, robotdirection)
@@ -416,11 +416,7 @@ def startRecCallback():
 		global ser
 		while uartflag:
 			c = ser.read() # attempt to read a character from Serial
-			try:
-				c = str(c, 'utf-8')
-			except:
-				pass
-			
+			c = str(c, 'utf-8')
 			#was anything read?
 			if len(c) == 0:
 				break
