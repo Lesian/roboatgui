@@ -389,9 +389,6 @@ RecFrame.grid(row = 30, column = 0, sticky = W)
 
 Label(RecFrame, text = "").grid(row = 0, column = 0, pady = 2)
 
-# speedBox = Spinbox(SwimmingFrame, from_=0, to=100, width = 2)
-# speedBox.grid(row = 2, column = 8, padx = 0, pady = 0, sticky = 'W')
-
 newText = Text(SwimmingFrame, width = 4, height = 1)
 newText.grid(row = 2, column = 8, padx = 0, pady = 0, sticky = 'W')
 
@@ -416,7 +413,8 @@ speedSelect = Button(SwimmingFrame, text = "Speed Select", width = 8, command = 
 speedSelect.grid(row = 2, column = 8, sticky = 'E')
 
 
-
+##---function to read the output of serial ---##
+##---used only for debugging and not in the main program ###
 def startRecCallback():
 	global ser
 	global uartrecflag
