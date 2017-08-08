@@ -17,7 +17,7 @@ import tkMessageBox
 
 #-----flags----- #
 uartflag = False
-movflag = 10
+movflag = 0
 uartrecflag = True
 #-----flags----- #
 
@@ -35,7 +35,7 @@ serBuffer = ""
 ##------Serial port variables------##
 
 root = Tk()  #main window
-root.wm_title("Roboat Remote Control Platform") 
+root.wm_title("Roboat Motion Control Platform") 
 root.config()
 root.resizable(width = False, height = False) # fixed size gui
 
@@ -145,32 +145,30 @@ tkvar5.trace('w', change_dropdown)
 
 #-----Opening uart-----#
 def uartOpCallback():
-	global serialPort
-	global baudRate
 	global ser
 	global uartflag
-	try:
-		ser = Serial(serialPort, baudRate, timeout=0, writeTimeout=2, stopbits = 1, parity = 'N', bytesize = 8,  xonxoff=False, rtscts = False, dsrdtr=False) #ensure non-blocking
-		uartflag = True
-	except:
-		uartError()
-
-
+	if not uartflag:
+		try:
+			ser = Serial(serialPort, baudRate, timeout=0, writeTimeout=None, stopbits = 1, parity = 'N', bytesize = 8,  xonxoff=False, rtscts = False, dsrdtr=False) #ensure non-blocking
+			uartflag = True
+		except:
+			uartError()
+	else:
+		tkMessageBox.showerror("Error", "One of the ports is already open.")
 
 
 #-----failure uart open message---#
 def uartError():
-	tkMessageBox.showerror("Error", "Serial port open failed")
+	tkMessageBox.showerror("Error", "Port not open")
 
 	
 #----Closing uart-----#	
 def uartclCallback():
-	global ser
 	global uartflag
-	try:
+	if uartflag:
 		ser.close()
 		uartflag = False
-	except:
+	else:
 		tkMessageBox.showerror("Error", "No open serial port")
 	
 	
@@ -249,36 +247,29 @@ def turnRightCallback():
 
 
 def leftKey(event):
-	global robotspeed
 	global movflag
-	commandmode = chr(11).encode()
+	global robotspeed
+	commandmode = b'\x06'
 	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
-	movflag = 6
+	movflag = 2
 	sendCommand(commandmode, robotspeed, robotdirection)
 
+
 def rightKey(event):
-	global robotspeed
 	global movflag
-	commandmode = chr(10).encode()
+	global robotspeed
+	commandmode = b'\x07'
 	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
-	movflag = 7
+	movflag = 3
 	sendCommand(commandmode, robotspeed, robotdirection)
 
 def upKey(event):
 	global movflag
 	global robotspeed
-	if movflag == 0:
-		temp = robotspeed
-		temp = temp.decode()
-		temp = ord(temp) + 2
-		temp = chr(temp)
-		temp = temp.encode()
-		robotspeed = temp
-	else:
-		robotspeed = chr(10).encode()
 	commandmode = b'\x04' 
+	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
 	movflag = 0
 	sendCommand(commandmode, robotspeed, robotdirection)
@@ -286,54 +277,17 @@ def upKey(event):
 def downKey(event):
 	global movflag
 	global robotspeed
-	if movflag == 1:
-		temp = robotspeed
-		temp = temp.decode()
-		temp = ord(temp) + 2
-		temp = chr(temp)
-		temp = temp.encode()
-		robotspeed = temp
-	else:
-		robotspeed = chr(10).encode()
 	commandmode = b'\x05'
+	robotspeed = chr(10).encode()
 	robotdirection = b'\x00'
 	movflag = 1
 	sendCommand(commandmode, robotspeed, robotdirection)
 
-def sendCommand(commandmode, robotspeed, robotdirection):
-	global ser
-	try:
-		assert uartflag == True
-		STARTBYTE = b'\xAA'   #first byte
-		ROBOTID = b'\x01'     #second byte
-		COMMANDMODE = commandmode #third byte 
-		COMMANDDATALENGTH = b'\x02' # fourth byte
-		ROBOTSPEED = robotspeed  #fifth byte 
-		ROBOTDIRECTION = robotdirection # sixth byte
-		ENDBYTE = b'\xFC'     #seventh/last byte 
 
-		
-		ser.write(STARTBYTE)
-		time.sleep(0.15)
-		ser.write(ROBOTID)
-		time.sleep(0.15)
-		ser.write(COMMANDMODE)
-		time.sleep(0.15)
-		ser.write(COMMANDDATALENGTH)
-		time.sleep(0.15)
-		ser.write(ROBOTSPEED)
-		time.sleep(0.15)
-		ser.write(ROBOTDIRECTION)
-		time.sleep(0.15)
-		ser.write(ENDBYTE)
-		time.sleep(0.15)
-	except:
-		uartError()
 
 
 def plusKey(event):
 	global robotspeed
-	global direction
 	temp = robotspeed
 	temp = temp.decode()
 	temp = ord(temp) + 2
@@ -341,53 +295,33 @@ def plusKey(event):
 	temp = temp.encode()
 	robotspeed = temp
 	if movflag == 0:
-		sendCommand(chr(4).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x04', robotspeed, robotdirection)
 	elif movflag == 1:
-		sendCommand(chr(5).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x05', robotspeed, robotdirection)
 	elif movflag == 2:
-		sendCommand(chr(6).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x06', robotspeed, robotdirection)
 	elif movflag == 3:
-		sendCommand(chr(7).encode(), robotspeed, robotdirection)
-	elif movflag == 4:
-		sendCommand(chr(8).encode(), robotspeed, robotdirection)
-	elif movflag == 5:
-		sendCommand(chr(9).encode(), robotspeed, robotdirection)
-	elif movflag == 6:
-		sendCommand(chr(11).encode(), robotspeed, robotdirection)
-	elif movflag == 7:
-		sendCommand(chr(10).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x07', robotspeed, robotdirection)
 
 
 
 
 def minusKey(event):
 	global robotspeed
-	global direction
 	temp = robotspeed
 	temp = temp.decode()
 	temp = ord(temp) - 2
-	try:
-		temp = chr(temp)
-	except:
-		tkMessageBox.showerror("Error", "Invalid speed")
+	temp = chr(temp)
 	temp = temp.encode()
 	robotspeed = temp
 	if movflag == 0:
-		sendCommand(chr(4).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x04', robotspeed, robotdirection)
 	elif movflag == 1:
-		sendCommand(chr(5).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x05', robotspeed, robotdirection)
 	elif movflag == 2:
-		sendCommand(chr(6).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x06', robotspeed, robotdirection)
 	elif movflag == 3:
-		sendCommand(chr(7).encode(), robotspeed, robotdirection)
-	elif movflag == 4:
-		sendCommand(chr(8).encode(), robotspeed, robotdirection)
-	elif movflag == 5:
-		sendCommand(chr(9).encode(), robotspeed, robotdirection)
-	elif movflag == 6:
-		sendCommand(chr(11).encode(), robotspeed, robotdirection)
-	elif movflag == 7:
-		sendCommand(chr(10).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x06', robotspeed, robotdirection)
 
 
 
@@ -436,8 +370,6 @@ def spaceKey(event):
 	robotspeed = b'\x00'
 	robotdirection = b'\x00'
 	sendCommand(commandmode, robotspeed, robotdirection)
-	robotspeed = chr(10).encode()
-	flag = 10
 #---Robot stops---#
 
 #---Gui roboat stops----#
@@ -447,8 +379,6 @@ def stopbtnCallback():
 	robotspeed = b'\x00'
 	robotdirection = b'\x00'
 	sendCommand(commandmode, robotspeed, robotdirection)
-	robotspeed = chr(10).encode()
-	flag = 10
 #---Gui roboat stops----#
 
 Stopbtn = Button(SwimmingFrame, text = "STOP", fg = 'red', command = stopbtnCallback, width = 14)
@@ -459,35 +389,32 @@ RecFrame.grid(row = 30, column = 0, sticky = W)
 
 Label(RecFrame, text = "").grid(row = 0, column = 0, pady = 2)
 
-speedBox = Spinbox(SwimmingFrame, from_=0, to=100, width = 2)
-speedBox.grid(row = 2, column = 8, padx = 0, pady = 0, sticky = 'W')
+# speedBox = Spinbox(SwimmingFrame, from_=0, to=100, width = 2)
+# speedBox.grid(row = 2, column = 8, padx = 0, pady = 0, sticky = 'W')
+
+newText = Text(SwimmingFrame, width = 4, height = 1)
+newText.grid(row = 2, column = 8, padx = 0, pady = 0, sticky = 'W')
 
 def speedSelectCallback():
 	global robotspeed
 	global robotdirection
-	ans = speedBox.get()
+	ans = int(newText.get('1.0', END))
+	print(ans)
 	temp = chr(int(ans))
 	robotspeed = temp.encode()
 	if movflag == 0:
-		sendCommand(chr(4).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x04', robotspeed, robotdirection)
 	elif movflag == 1:
-		sendCommand(chr(5).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x05', robotspeed, robotdirection)
 	elif movflag == 2:
-		sendCommand(chr(6).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x06', robotspeed, robotdirection)
 	elif movflag == 3:
-		sendCommand(chr(7).encode(), robotspeed, robotdirection)
-	elif movflag == 4:
-		sendCommand(chr(8).encode(), robotspeed, robotdirection)
-	elif movflag == 5:
-		sendCommand(chr(9).encode(), robotspeed, robotdirection)
-	elif movflag == 6:
-		sendCommand(chr(11).encode(), robotspeed, robotdirection)
-	elif movflag == 7:
-		sendCommand(chr(10).encode(), robotspeed, robotdirection)
+		sendCommand(b'\x07', robotspeed, robotdirection)
 
 
 speedSelect = Button(SwimmingFrame, text = "Speed Select", width = 8, command = speedSelectCallback)
 speedSelect.grid(row = 2, column = 8, sticky = 'E')
+
 
 
 def startRecCallback():
@@ -495,48 +422,65 @@ def startRecCallback():
 	global uartrecflag
 	def readSerial():
 		global ser
-		try:
-			assert uartflag
-			while uartrecflag:
-				c = ser.read() # attempt to read a character from Serial
-				try:
-					c = str(c, 'utf-8')
-				except:
-					pass
-				#was anything read?
-				if len(c) == 0:
-					break
+		while uartrecflag:
+			c = ser.read() # attempt to read a character from Serial
+			try:
+				c = str(c, 'utf-8')
+			except:
+				pass
+			#was anything read?
+			if len(c) == 0:
+				break
+			
+			# get the buffer from outside of this function
+			global serBuffer
+			
+			# check if character is a delimeter
+			if c == '\r':
+				c = '' # don't want returns. chuck it
 				
-				# get the buffer from outside of this function
-				global serBuffer
+			if c == '\n':
+				serBuffer += "\n" # add the newline to the buffer
 				
-				# check if character is a delimeter
-				if c == '\r':
-					c = '' # don't want returns. chuck it
-					
-				if c == '\n':
-					serBuffer += "\n" # add the newline to the buffer
-					print(serBuffer)
-					serBuffer = "" # empty the buffer
-				else:
-					serBuffer += c # add to the buffer
-			root.after(10, readSerial) # check serial again soon
-		except:
-			uartError()
+				#add the line to the TOP of the lonewText2.insert('0.0', serBuffer)
+				print(serBuffer)
+				serBuffer = "" # empty the buffer
+			else:
+				serBuffer += c # add to the buffer
+		root.after(10, readSerial) # check serial again soon
 	root.after(100, readSerial)
 
-def stopRecCallback():
-	global ser
-	global uartrecflag
-	uartrecflag = False
+def sendCommand(commandmode, robotspeed, robotdirection):
+	try:
+		assert uartflag == True
+		STARTBYTE = b'\xAA'   #first byte
+		ROBOTID = b'\x01'     #second byte
+		COMMANDMODE = commandmode #third byte 
+		COMMANDDATALENGTH = b'\x02' # fourth byte
+		ROBOTSPEED = robotspeed  #fifth byte 
+		ROBOTDIRECTION = robotdirection # sixth byte
+		ENDBYTE = b'\xFC'     #seventh/last byte 
+		ser.write(STARTBYTE)
+		time.sleep(0.13)
+		ser.write(ROBOTID)
+		time.sleep(0.13)
+		ser.write(COMMANDMODE)
+		time.sleep(0.13)
+		ser.write(COMMANDDATALENGTH)
+		time.sleep(0.13)
+		ser.write(ROBOTSPEED)
+		time.sleep(0.13)
+		ser.write(ROBOTDIRECTION)
+		time.sleep(0.13)
+		ser.write(ENDBYTE)
+		newText.delete(1.0, END)
+		newText.insert(END, str(ord(robotspeed.decode())))
+		time.sleep(0.13)
 
-#Startrec = Button(RecFrame, text = "START RECORDING", command = startRecCallback)
-#Startrec.grid(row = 2, column = 0, pady = 2, padx = 2, sticky = W)
+	except:
+		uartError()
 
-#Stoprec = Button(RecFrame, text = "STOP RECORDING", fg = "red", command = stopRecCallback)
-#Stoprec.grid(row = 2, column = 3, pady = 2, padx = 2, sticky = W)
-#start monitoring and updating the GUI
-
+speedSelect.bind("<1>", lambda event: speedSelect.focus_set())
 
 root.bind('<Left>', leftKey)
 root.bind('<Right>', rightKey)
